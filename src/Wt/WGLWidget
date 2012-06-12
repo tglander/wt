@@ -2041,6 +2041,16 @@ public:
 #endif
   }
 
+    /*! \brief Inject JavaScript into the current js-stream.
+    *
+    * Careful: this method directly puts the given jsString into
+    * the JavaScript stream, whatever state it current has.
+    * For example, if called in initGL(), it will put the jsString
+    * into the client-side initGL() code.
+    */  
+    void injectJS(const std::string & jsString){js_ << jsString;}
+
+
 protected:
   DomElementType domElementType() const;
   DomElement *createDomElement(WApplication *app);
