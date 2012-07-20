@@ -820,7 +820,7 @@ public:
   void blendFuncSeparate(GLenum srcRGB, GLenum dstRGB, 
                          GLenum srcAlpha, GLenum dstAlpha);
 
-   /*! \brief glBufferData — create and initialize a buffer object's data store
+   /*! \brief glBufferData - create and initialize a buffer object's data store
    *
    * Set the size of the currently bound WebGLBuffer object for the passed target.
    * The buffer is initialized to 0.
