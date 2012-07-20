@@ -820,6 +820,20 @@ public:
   void blendFuncSeparate(GLenum srcRGB, GLenum dstRGB, 
                          GLenum srcAlpha, GLenum dstAlpha);
 
+   /*! \brief glBufferData — create and initialize a buffer object's data store
+   *
+   * Set the size of the currently bound WebGLBuffer object for the passed target.
+   * The buffer is initialized to 0.
+   * <a href="http://www.khronos.org/opengles/sdk/2.0/docs/man/glBufferData.xml">
+   * glBufferData() OpenGL ES manpage</a>
+   */
+  void bufferData(GLenum target, int size, GLenum usage) {
+    js_ << "ctx.bufferData(" << toString(target) << ",";
+    js_ << size << ",";
+    js_ << toString(usage) << ");";
+    GLDEBUG;
+  }
+
   /*! \brief GL function that loads float or double data in a VBO
    *
    * Unlike the C version, we can't accept a void * here. We must be able
