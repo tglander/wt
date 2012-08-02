@@ -13,7 +13,7 @@
 namespace Wt {
 
 // define to enable WebGL debug code
-//#define WT_WGLWIDGET_DEBUG
+#define WT_WGLWIDGET_DEBUG
 
 #ifdef WT_WGLWIDGET_DEBUG
 #define GLDEBUG do {if (debugging_) {js_ << "\n{var err = ctx.getError(); if(err != ctx.NO_ERROR) {alert('error " << __FUNCTION__ << ": ' + err); debugger;}}\n";}} while(false)
@@ -1993,6 +1993,13 @@ public:
                                   double uX, double uY, double uZ,
                                   double pitchRate, double yawRate);
 
+  // TG
+    void setClientSideLookAtHandler(const JavaScriptMatrix4x4 &m,
+                                  double fromX, double fromY, double fromZ,
+                                  double toX, double toY, double toZ,
+                                  double upX, double upY, double upZ);
+
+
   /*! \brief Add a mouse handler to the widget that allows 'walking' in
    * the scene
    *
@@ -2074,6 +2081,9 @@ protected:
   void render(WFlags<RenderFlag> flags);
   std::string renderRemoveJs();
 
+  // TG: access in derived classes
+  std::stringstream js_;
+
 private:
   std::string glObjJsRef();
   void layoutSizeChanged(int width, int height);
@@ -2112,7 +2122,7 @@ private:
   JSlot repaintSlot_;
 
   std::stringstream delayedJavaScript_;
-  std::stringstream js_;
+  
 
 #ifndef WT_TARGET_JAVA
   template<typename Iterator>
