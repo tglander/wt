@@ -159,6 +159,9 @@ public:
   typedef std::string UniformLocation;
   typedef std::string Texture;
 
+  // TG: might be a full or a partial buffer
+  typedef std::string BufferResource;
+
   /*! \brief A client-side JavaScript matrix
    *
    * A JavaScriptMatrix has methods that make it possible to do client-side
@@ -834,6 +837,9 @@ public:
     GLDEBUG;
   }
 
+  // TG: version that takes a binary buffer
+  void bufferData(GLenum target, BufferResource res, GLenum usage);
+
   /*! \brief GL function that loads float or double data in a VBO
    *
    * Unlike the C version, we can't accept a void * here. We must be able
@@ -898,6 +904,8 @@ public:
     GLDEBUG;
   }
 
+  // TG: version that takes a binary buffer
+  void bufferSubData(GLenum target, unsigned offset, BufferResource res);
 
   //GLenum checkFramebufferStatus(GLenum target);
 
@@ -971,6 +979,15 @@ public:
    * glGenBuffers() OpenGL ES manpage</a>
    */
   Buffer createBuffer();
+
+    /*! \brief GL function that creates an BufferResource from a binary buffer using a 
+   *    given URL.
+   *    The BufferResource is loaded before executing initGL.
+   *    Use it to transmit binary data to bufferData() or bufferSubData().
+   * <a href="http://www.khronos.org/opengles/sdk/2.0/docs/man/glGenBuffers.xml">
+   * glGenBuffers() OpenGL ES manpage</a>
+   */
+  BufferResource createAndLoadBufferResource(const std::string &url);
 
   /*! \brief GL function that creates a frame buffer object
    *
@@ -2102,11 +2119,18 @@ private:
   unsigned attributes_;
   unsigned uniforms_;
   unsigned buffers_;
+  
+  // TG: to keep track of BufferResources
+  unsigned bufferResources_;
+
   unsigned framebuffers_;
   unsigned renderbuffers_;
   unsigned textures_;
   unsigned matrices_;
   std::vector<std::pair<std::string, std::string> > preloadImages_;
+  
+  // TG: first: BufferResource string, second: url
+  std::vector<std::pair<std::string, std::string> > preloadBufferResources_;
 
   // If client detects that a WebGL context cannot be created, it fires this
   // signal, and the handler sets wegGlNotAvailable_ to true. If this happens,
