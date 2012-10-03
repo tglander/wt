@@ -509,8 +509,8 @@ void WGLWidget::updateDom(DomElement &element, bool all)
   if (updateGL_ || updateResizeGL_ || updatePaintGL_) {
     std::stringstream tmp;
     tmp <<
-      "var o = " << glObjJsRef() << ";\n"
-      "if(o.ctx){\n";
+      "var o = " << glObjJsRef() << ";\n";
+    tmp << "if(o.ctx){\n";
     if (updateGL_) {
       js_.str("");
       updateGL();
@@ -556,13 +556,13 @@ void WGLWidget::updateDom(DomElement &element, bool all)
     const bool preloadingSomething = preloadImages_.size()>0 || preloadBufferResources_.size() >0;
 
     // make sure both booleans exist
-    tmp << "o.preloadingTextures=false;";
-    tmp << "o.preloadingBufferResources=false;";
+    tmp << "o.preloadingTextures=" << (preloadImages_.size()>0?"true":"false") <<";";
+    tmp << "o.preloadingBufferResources=" << (preloadBufferResources_.size()>0?"true":"false") <<";";
 
     if (preloadingSomething)
     {
         if (preloadImages_.size() > 0) {
-            //tmp << "debugger;\n";
+            //preloadingStream << "debugger;\n";
             tmp <<
                 //"debugger;"
                 "o.preloadingTextures=true;"
@@ -611,14 +611,14 @@ void WGLWidget::updateDom(DomElement &element, bool all)
 
         // now check for buffers to preload
         if (preloadBufferResources_.size() > 0) {
-            //tmp << "debugger;\n";
+            //preloadingStream << "debugger;\n";
             tmp <<
                 "o.preloadingBufferResources=true;"
                 "new Wt._p_.BufferResourcePreloader([";
             for (unsigned i = 0; i < preloadBufferResources_.size(); ++i) {
                 if (i != 0)
                     tmp << ',';
-                //tmp << '\'' << resolveRelativeUrl(preloadBufferResources_[i].second) << '\'';
+                //preloadingStream << '\'' << resolveRelativeUrl(preloadBufferResources_[i].second) << '\'';
                 tmp << '\'' << Wt::WApplication::instance()->makeAbsoluteUrl(preloadBufferResources_[i].second) << '\'';
                 
             }
@@ -662,6 +662,9 @@ void WGLWidget::updateDom(DomElement &element, bool all)
         }
     } 
     else {
+
+        // TG: needed in case no buffers or textures are there- is executed before
+
       // No textures or buffers to load - go and paint
       tmp <<
         "if(!o.preloadingTextures || !o.preloadingBuffers){"
@@ -682,7 +685,9 @@ void WGLWidget::updateDom(DomElement &element, bool all)
         """}"
         "}";
     }
+
     el->callJavaScript(tmp.str());
+    //el->callJavaScript(tmpOverall.str());
     updateGL_ = updatePaintGL_ = updateResizeGL_ = false;
   }
 
@@ -848,6 +853,14 @@ void WGLWidget::blendFuncSeparate(GLenum srcRGB,
   GLDEBUG;
 }
 
+void WGLWidget::bufferData(Wt::WGLWidget::GLenum target, BufferResource res, unsigned bufferResourceOffset, unsigned bufferResourceSize, Wt::WGLWidget::GLenum usage)
+{
+    js_ << "ctx.bufferData(" << toString(target) << ",";
+    js_ << res << ".data.slice("<< bufferResourceOffset <<","<<bufferResourceOffset + bufferResourceSize << "), ";
+    js_ << toString(usage) << ");";
+    GLDEBUG;
+}
+
 void WGLWidget::bufferData(Wt::WGLWidget::GLenum target, BufferResource res, Wt::WGLWidget::GLenum usage)
 {
     js_ << "ctx.bufferData(" << toString(target) << ",";
@@ -863,6 +876,15 @@ void WGLWidget::bufferSubData(Wt::WGLWidget::GLenum target, unsigned offset, Buf
     js_ << res << ".data);";
     GLDEBUG;
 }
+
+void WGLWidget::bufferSubData(Wt::WGLWidget::GLenum target, unsigned offset, BufferResource res, unsigned bufferResourceOffset, unsigned bufferResourceSize)
+{
+    js_ << "ctx.bufferSubData(" << toString(target) << ",";
+    js_ << offset << ",";
+    js_ << res << ".data.slice("<< bufferResourceOffset <<", " << bufferResourceOffset + bufferResourceSize << "));";
+    GLDEBUG;
+}
+
 
 void WGLWidget::clear(WFlags<GLenum> mask)
 {
@@ -950,9 +972,9 @@ WGLWidget::BufferResource WGLWidget::createAndLoadBufferResource(const std::stri
 {
     BufferResource retval = "ctx.WtBufferResource" + boost::lexical_cast<std::string>(bufferResources_++);
 
-    // make sure, the field is set in ctx
+    // variable is set by preloader
     //js_ << retval << "= {data:0};";
-    GLDEBUG;
+    //GLDEBUG;
 
     preloadBufferResources_.push_back(std::make_pair(retval, url));
     //GLDEBUG;
