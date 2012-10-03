@@ -556,8 +556,8 @@ void WGLWidget::updateDom(DomElement &element, bool all)
     const bool preloadingSomething = preloadImages_.size()>0 || preloadBufferResources_.size() >0;
 
     // make sure both booleans exist
-    tmp << "o.preloadingTextures=false;";
-    tmp << "o.preloadingBufferResources=false;";
+    tmp << "o.preloadingTextures=" << (preloadImages_.size()>0?"true":"false") <<";";
+    tmp << "o.preloadingBufferResources=" << (preloadBufferResources_.size()>0?"true":"false") <<";";
 
     if (preloadingSomething)
     {
@@ -662,25 +662,28 @@ void WGLWidget::updateDom(DomElement &element, bool all)
         }
     } 
     else {
+
+        // TG: not needed - is executed before
+
       // No textures or buffers to load - go and paint
-      tmp <<
-        "if(!o.preloadingTextures || !o.preloadingBuffers){"
-        // It's not ok to execute an update method or initialize if we're
-        // waiting for textures or buffers to load; this will result in undefined
-        // symbols in JS. After textures and buffers are loaded, the code sequence below
-        // is executed from there.
-        """if(o.initialized) {"
-        ""  "var key;"
-        ""  "for(key in o.updates) o.updates[key]();"
-        ""  "o.updates = new Array();"
-        ""  "o.resizeGL();"
-        ""  "o.paintGL();"
-        """} else {"
-        ""  "o.initializeGL();"
-        ""  "o.resizeGL();"
-        ""  "o.paintGL();"
-        """}"
-        "}";
+      //tmp <<
+      //  "if(!o.preloadingTextures || !o.preloadingBuffers){"
+      //  // It's not ok to execute an update method or initialize if we're
+      //  // waiting for textures or buffers to load; this will result in undefined
+      //  // symbols in JS. After textures and buffers are loaded, the code sequence below
+      //  // is executed from there.
+      //  """if(o.initialized) {"
+      //  ""  "var key;"
+      //  ""  "for(key in o.updates) o.updates[key]();"
+      //  ""  "o.updates = new Array();"
+      //  ""  "o.resizeGL();"
+      //  ""  "o.paintGL();"
+      //  """} else {"
+      //  ""  "o.initializeGL();"
+      //  ""  "o.resizeGL();"
+      //  ""  "o.paintGL();"
+      //  """}"
+      //  "}";
     }
     el->callJavaScript(tmp.str());
     updateGL_ = updatePaintGL_ = updateResizeGL_ = false;
@@ -848,6 +851,14 @@ void WGLWidget::blendFuncSeparate(GLenum srcRGB,
   GLDEBUG;
 }
 
+void WGLWidget::bufferData(Wt::WGLWidget::GLenum target, BufferResource res, unsigned bufferResourceOffset, unsigned bufferResourceSize, Wt::WGLWidget::GLenum usage)
+{
+    js_ << "ctx.bufferData(" << toString(target) << ",";
+    js_ << res << ".data.slice("<< bufferResourceOffset <<","<<bufferResourceOffset + bufferResourceSize << "), ";
+    js_ << toString(usage) << ");";
+    GLDEBUG;
+}
+
 void WGLWidget::bufferData(Wt::WGLWidget::GLenum target, BufferResource res, Wt::WGLWidget::GLenum usage)
 {
     js_ << "ctx.bufferData(" << toString(target) << ",";
@@ -863,6 +874,15 @@ void WGLWidget::bufferSubData(Wt::WGLWidget::GLenum target, unsigned offset, Buf
     js_ << res << ".data);";
     GLDEBUG;
 }
+
+void WGLWidget::bufferSubData(Wt::WGLWidget::GLenum target, unsigned offset, BufferResource res, unsigned bufferResourceOffset, unsigned bufferResourceSize)
+{
+    js_ << "ctx.bufferSubData(" << toString(target) << ",";
+    js_ << offset << ",";
+    js_ << res << ".data.slice("<< bufferResourceOffset <<", " << bufferResourceOffset + bufferResourceSize << "));";
+    GLDEBUG;
+}
+
 
 void WGLWidget::clear(WFlags<GLenum> mask)
 {

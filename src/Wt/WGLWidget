@@ -840,6 +840,9 @@ public:
   // TG: version that takes a binary buffer
   void bufferData(GLenum target, BufferResource res, GLenum usage);
 
+  // TG: version that takes a binary buffer with an offset into it. Used for aggregated buffers
+    void bufferData(GLenum target, BufferResource res, unsigned bufferResourceOffset, unsigned bufferResourceSize, GLenum usage);
+
   /*! \brief GL function that loads float or double data in a VBO
    *
    * Unlike the C version, we can't accept a void * here. We must be able
@@ -906,6 +909,9 @@ public:
 
   // TG: version that takes a binary buffer
   void bufferSubData(GLenum target, unsigned offset, BufferResource res);
+
+  // TG: version that takes a binary buffer with an offset into it. Used for aggregated buffers
+  void bufferSubData(GLenum target, unsigned offset, BufferResource res, unsigned bufferResourceOffset, unsigned size);
 
   //GLenum checkFramebufferStatus(GLenum target);
 
