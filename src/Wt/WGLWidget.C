@@ -664,7 +664,6 @@ void WGLWidget::updateDom(DomElement &element, bool all)
     else {
 
         // TG: needed in case no buffers or textures are there- is executed before
-
       // No textures or buffers to load - go and paint
       tmp <<
         "if(!o.preloadingTextures || !o.preloadingBuffers){"
