@@ -555,9 +555,17 @@ void WGLWidget::updateDom(DomElement &element, bool all)
     // Preloading images and buffers
     const bool preloadingSomething = preloadImages_.size()>0 || preloadBufferResources_.size() >0;
 
-    // make sure both booleans exist
-    tmp << "o.preloadingTextures=" << (preloadImages_.size()>0?"true":"false") <<";";
-    tmp << "o.preloadingBufferResources=" << (preloadBufferResources_.size()>0?"true":"false") <<";";
+    // make sure both booleans exist, but do not overwrite an existing value
+    tmp << "if (undefined === o.preloadingTextures){"
+            "   o.preloadingTextures=" << (preloadImages_.size()>0?"true":"false") <<";"
+            "}else{"
+            "   o.preloadingTextures|=" << (preloadImages_.size()>0?"true":"false") <<";"
+            "}";
+    tmp << "if (undefined === o.preloadingBufferResources){ "
+        "   o.preloadingBufferResources=" << (preloadBufferResources_.size()>0?"true":"false") <<";"
+        "}else{"
+        "   o.preloadingBufferResources|=" << (preloadBufferResources_.size()>0?"true":"false") <<";"
+        "}";
 
     if (preloadingSomething)
     {
@@ -666,7 +674,7 @@ void WGLWidget::updateDom(DomElement &element, bool all)
         // TG: needed in case no buffers or textures are there- is executed before
       // No textures or buffers to load - go and paint
       tmp <<
-        "if(!o.preloadingTextures || !o.preloadingBuffers){"
+        "if(!o.preloadingTextures && !o.preloadingBuffers){"
         // It's not ok to execute an update method or initialize if we're
         // waiting for textures or buffers to load; this will result in undefined
         // symbols in JS. After textures and buffers are loaded, the code sequence below
